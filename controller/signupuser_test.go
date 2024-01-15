@@ -20,13 +20,13 @@ func TestRegisterUser(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockSignUpService := mocks.NewMockSignUpUser(mockCtrl)
-	userController := &UserController{
+	userController := &SignUpUserController{
 		Service: mockSignUpService,
 		User:    &model.SignUpUserRequest{},
 	}
 
 	mockSignUpService.EXPECT().
-		SignUp(gomock.Any()).
+		SignUp(gomock.Any(), gomock.Any()).
 		Return("new_user_id", nil).
 		Times(1)
 
@@ -50,7 +50,7 @@ func TestRegisterUserMissingFieldsError(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockSignUpService := mocks.NewMockSignUpUser(mockCtrl)
-	userController := &UserController{
+	userController := &SignUpUserController{
 		Service: mockSignUpService,
 		User:    &model.SignUpUserRequest{},
 	}
@@ -74,13 +74,13 @@ func TestRegisterUserServiceError(t *testing.T) {
 	defer mockCtrl.Finish()
 
 	mockSignUpService := mocks.NewMockSignUpUser(mockCtrl)
-	userController := &UserController{
+	userController := &SignUpUserController{
 		Service: mockSignUpService,
 		User:    &model.SignUpUserRequest{},
 	}
 
 	mockSignUpService.EXPECT().
-		SignUp(gomock.Any()).
+		SignUp(gomock.Any(), gomock.Any()).
 		Return("", &customerr.APIError{
 			StatusCode: 400,
 			Err:        "invalid_signup",
@@ -101,4 +101,3 @@ func TestRegisterUserServiceError(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Contains(t, w.Body.String(), "User already exists")
 }
-

@@ -6,7 +6,7 @@ import (
 	"github.com/auth0/go-auth0/authentication"
 )
 
-func TestGetSignUpError(t *testing.T) {
+func TestGetLoginError(t *testing.T) {
 	type args struct {
 		err error
 	}
@@ -16,27 +16,23 @@ func TestGetSignUpError(t *testing.T) {
 		want *APIError
 	}{
 		{
-			name: "TestGetSignUpError_400",
+			name: "TestGetLoginError_403",
 			args: args{
 				err: &authentication.Error{
-					StatusCode: 400,
-					Err:        "invalid_signup",
-					Message:    "Invalid signup",
+					StatusCode: 403,
 				},
 			},
 			want: &APIError{
-				StatusCode: 400,
-				Err:        "invalid_signup",
-				Message:    "User already exists",
+				StatusCode: 403,
+				Err:        "invalid_login",
+				Message:    "Username or password is invalid",
 			},
 		},
 		{
-			name: "TestGetSignUpError_500",
+			name: "TestGetLoginError_500",
 			args: args{
 				err: &authentication.Error{
 					StatusCode: 500,
-					Err:        "Internal Server Error",
-					Message:    "",
 				},
 			},
 			want: &APIError{
@@ -46,12 +42,11 @@ func TestGetSignUpError(t *testing.T) {
 			},
 		},
 		{
-			name: "TestGetSignUpError_xxx",
+			name: "TestGetLoginError_xxx",
 			args: args{
 				err: &authentication.Error{
 					StatusCode: 404,
 					Err:        "not_found",
-					Message:    "Not found",
 				},
 			},
 			want: &APIError{
@@ -61,9 +56,10 @@ func TestGetSignUpError(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetSignUpError(tt.args.err); got.Error() != tt.want.Error() {
+			if got := GetLoginError(tt.args.err); got.Error() != tt.want.Error() {
 				t.Errorf("GetSignUpError() = %v, want %v", got, tt.want)
 			}
 		})

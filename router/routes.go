@@ -10,12 +10,17 @@ import (
 func Init() *gin.Engine {
 	router := gin.Default()
 
-	controller := controller.UserController{
+	signUpController := controller.SignUpUserController{
 		User: &model.SignUpUserRequest{},
 		Service: service.NewSignUpUser(),
 	}
+	loginController := controller.LoginUserController{
+		User: &model.LoginRequest{},
+		Service: service.NewLogin(),
+	}
 
-	router.POST("/register", controller.RegisterUser)
+	router.POST("/register", signUpController.RegisterUser)
+	router.POST("/login", loginController.Login)
 
 	return router
 }

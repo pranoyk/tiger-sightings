@@ -20,7 +20,7 @@ type signUpUser struct {
 }
 
 type SignUpUser interface {
-	SignUp(user *model.SignUpUserRequest) (string, *customerr.APIError)
+	SignUp(ctx context.Context, user *model.SignUpUserRequest) (string, *customerr.APIError)
 }
 
 func NewSignUpUser() *signUpUser {
@@ -31,16 +31,12 @@ func NewSignUpUser() *signUpUser {
 	}
 }
 
-func (su *signUpUser) SignUp(user *model.SignUpUserRequest) (string, *customerr.APIError) {
-	domain := su.domain
-	clientID := su.clientID
-	clientSecret := su.clientSecret
-
+func (su *signUpUser) SignUp(ctx context.Context, user *model.SignUpUserRequest) (string, *customerr.APIError) {
 	authAPI, err := authentication.New(
-		context.TODO(),
-		domain,
-		authentication.WithClientID(clientID),
-		authentication.WithClientSecret(clientSecret),
+		ctx,
+		su.domain,
+		authentication.WithClientID(su.clientID),
+		authentication.WithClientSecret(su.clientSecret),
 	)
 	if err != nil {
 		fmt.Printf("failed to initialize the auth0 authentication API client: %+v", err)
@@ -58,7 +54,7 @@ func (su *signUpUser) SignUp(user *model.SignUpUserRequest) (string, *customerr.
 		Email:      user.Email,
 	}
 
-	createdUser, err := authAPI.Database.Signup(context.Background(), userData)
+	createdUser, err := authAPI.Database.Signup(ctx, userData)
 	if err != nil {
 		fmt.Printf("failed to sign user up: %+v", err)
 		return "", customerr.GetSignUpError(err)

@@ -10,9 +10,10 @@
 package mocks
 
 import (
+	context "context"
 	reflect "reflect"
 
-	custom_err "github.com/pranoyk/tiger-sightings/custom-err"
+	customerr "github.com/pranoyk/tiger-sightings/custom-err"
 	model "github.com/pranoyk/tiger-sightings/model"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -41,16 +42,16 @@ func (m *MockSignUpUser) EXPECT() *MockSignUpUserMockRecorder {
 }
 
 // SignUp mocks base method.
-func (m *MockSignUpUser) SignUp(user *model.SignUpUserRequest) (string, *custom_err.APIError) {
+func (m *MockSignUpUser) SignUp(ctx context.Context, user *model.SignUpUserRequest) (string, *customerr.APIError) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SignUp", user)
+	ret := m.ctrl.Call(m, "SignUp", ctx, user)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(*custom_err.APIError)
+	ret1, _ := ret[1].(*customerr.APIError)
 	return ret0, ret1
 }
 
 // SignUp indicates an expected call of SignUp.
-func (mr *MockSignUpUserMockRecorder) SignUp(user any) *gomock.Call {
+func (mr *MockSignUpUserMockRecorder) SignUp(ctx, user any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignUp", reflect.TypeOf((*MockSignUpUser)(nil).SignUp), user)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignUp", reflect.TypeOf((*MockSignUpUser)(nil).SignUp), ctx, user)
 }
