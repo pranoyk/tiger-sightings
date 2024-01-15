@@ -2,9 +2,36 @@ module github.com/pranoyk/tiger-sightings
 
 go 1.21.1
 
-require github.com/gin-gonic/gin v1.9.1
+require (
+	github.com/gin-gonic/gin v1.9.1
+	github.com/stretchr/testify v1.8.4
+	go.uber.org/mock v0.4.0
+)
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+)
+
+require (
+	github.com/PuerkitoBio/rehttp v1.3.0 // indirect
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/google/uuid v1.5.0 // indirect
+	github.com/lestrrat-go/blackmagic v1.0.2 // indirect
+	github.com/lestrrat-go/httpcc v1.0.1 // indirect
+	github.com/lestrrat-go/httprc v1.0.4 // indirect
+	github.com/lestrrat-go/iter v1.0.2 // indirect
+	github.com/lestrrat-go/jwx/v2 v2.0.18 // indirect
+	github.com/lestrrat-go/option v1.0.1 // indirect
+	github.com/segmentio/asm v1.2.0 // indirect
+	go.devnw.com/structs v1.0.0 // indirect
+	golang.org/x/oauth2 v0.15.0 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
+)
+
+require (
+	github.com/auth0/go-auth0 v1.4.0
 	github.com/bytedance/sonic v1.10.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect
