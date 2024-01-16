@@ -8,3 +8,6 @@ migrate-up:
 
 migrate-down:
 	migrate -database ${POSTGRESQL_URL} -path ./db/migrations down
+
+migrate-force:
+	migrate -path ./db/migrations -database ${POSTGRESQL_URL} force ${VERSION}

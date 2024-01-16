@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS tigers(
     tiger_id UUID PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
-    age INT NOT NULL,
+    dob DATE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     last_seen TIMESTAMP NOT NULL,
     lat DOUBLE PRECISION NOT NULL,
