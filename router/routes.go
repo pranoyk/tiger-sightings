@@ -34,6 +34,7 @@ func Init(db *sql.DB) *gin.Engine {
 	r1 := router.Group("/api/v1")
 	r1.Use(middleware.JwtAuthMiddleware())
 	r1.POST("/tigers", tigerController.CreateTiger)
+	r1.POST("/tigers/:id/sightings", tigerController.CreateSighting)
 
 	return router
 }

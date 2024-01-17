@@ -12,6 +12,13 @@ type CreateTigerRequest struct {
 	Lng      string `json:"lng" binding:"required"`
 }
 
+type CreateTigerSightingRequest struct {
+	LastSeen string `json:"last_seen" binding:"required"`
+	Lat      string `json:"lat" binding:"required"`
+	Lng      string `json:"lng" binding:"required"`
+	TigerId  string `json:"tiger_id"`
+}
+
 type Tiger struct {
 	ID        string    `json:"id" db:"tiger_id"`
 	Name      string    `json:"name" db:"name"`
