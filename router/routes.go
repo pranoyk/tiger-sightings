@@ -32,9 +32,12 @@ func Init(db *sql.DB) *gin.Engine {
 	router.POST("/login", loginController.Login)
 
 	r1 := router.Group("/api/v1")
+	r1.GET("/tigers", tigerController.GetTigers)
+
 	r1.Use(middleware.JwtAuthMiddleware())
 	r1.POST("/tigers", tigerController.CreateTiger)
 	r1.POST("/tigers/:id/sightings", tigerController.CreateSighting)
 
+	
 	return router
 }

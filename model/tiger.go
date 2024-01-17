@@ -24,6 +24,9 @@ type Tiger struct {
 	Name      string    `json:"name" db:"name"`
 	Dob       time.Time `json:"dob" db:"dob"`
 	CreatedBy string    `json:"created_by" db:"created_by"`
+	LastSeen  time.Time `json:"last_seen" db:"last_seen"`
+	Lat       float64   `json:"lat" db:"lat"`
+	Lng       float64   `json:"lng" db:"lng"`
 }
 
 type TigerSightings struct {

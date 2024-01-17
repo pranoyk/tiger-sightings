@@ -60,3 +60,12 @@ func (tc *TigersController) CreateSighting(ctx *gin.Context) {
 	}
 	ctx.JSON(200, gin.H{"message": "Create Sighting"})
 }
+
+func (tc *TigersController) GetTigers(ctx *gin.Context) {
+	tigers, err := tc.Service.GetTigers(ctx.Request.Context())
+	if err != nil {
+		ctx.JSON(err.StatusCode, gin.H{"error": err.Message})
+		return
+	}
+	ctx.JSON(200, tigers)
+}

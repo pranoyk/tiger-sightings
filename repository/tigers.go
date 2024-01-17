@@ -17,12 +17,32 @@ type TigersRepository interface {
 	CreateTiger(ctx context.Context, tiger *model.Tiger, tigerSightins *model.TigerSightings, email string) error
 	CreateSighting(ctx context.Context, tx *sql.Tx, tigerSighting *model.TigerSightings, email string) (err error)
 	GetLastSighting(ctx context.Context, tigerID string) (*model.TigerSightings, error)
+	GetTigers(ctx context.Context) ([]*model.Tiger, error)
 }
 
 func NewTigersRepository(db *sql.DB) TigersRepository {
 	return &tigersRepository{
 		db: db,
 	}
+}
+
+func (r *tigersRepository) GetTigers(ctx context.Context) ([]*model.Tiger, error) {
+	var tigers []*model.Tiger
+	rows, err := r.db.QueryContext(ctx, "SELECT t.name, t.dob, ts.last_seen, ts.lat, ts.lng FROM tigers t JOIN tiger_sightings ts ON t.tiger_id = ts.tiger_id ORDER BY ts.last_seen DESC")
+	if err != nil {
+		fmt.Println("error getting tigers: ", err)
+		return nil, err
+	}
+	for rows.Next() {
+		var tiger model.Tiger
+		err = rows.Scan(&tiger.Name, &tiger.Dob, &tiger.LastSeen, &tiger.Lat, &tiger.Lng)
+		if err != nil {
+			fmt.Println("error scanning tigers: ", err)
+			return nil, err
+		}
+		tigers = append(tigers, &tiger)
+	}
+	return tigers, nil
 }
 
 func (r *tigersRepository) CreateTiger(ctx context.Context, tiger *model.Tiger, tigerSightings *model.TigerSightings, email string) (err error) {
