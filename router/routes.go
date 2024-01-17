@@ -23,7 +23,10 @@ func Init(db *sql.DB) *gin.Engine {
 		User:    &model.LoginRequest{},
 		Service: service.NewLogin(),
 	}
-	tigerController := controller.TigersController{}
+	tigerController := controller.TigersController{
+		Tiger:   &model.CreateTigerRequest{},
+		Service: service.NewTiger(repository.NewTigersRepository(db)),
+	}
 
 	router.POST("/register", signUpController.RegisterUser)
 	router.POST("/login", loginController.Login)
