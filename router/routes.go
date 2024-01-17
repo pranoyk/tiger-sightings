@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/pranoyk/tiger-sightings/controller"
+	"github.com/pranoyk/tiger-sightings/middleware"
 	"github.com/pranoyk/tiger-sightings/model"
 	"github.com/pranoyk/tiger-sightings/service"
 )
@@ -18,9 +19,15 @@ func Init() *gin.Engine {
 		User: &model.LoginRequest{},
 		Service: service.NewLogin(),
 	}
+	tigerController := controller.TigersController{
+	}
 
 	router.POST("/register", signUpController.RegisterUser)
 	router.POST("/login", loginController.Login)
+
+	r1 := router.Group("/api/v1")
+	r1.Use(middleware.JwtAuthMiddleware())
+	r1.POST("/tigers", tigerController.CreateTiger)
 
 	return router
 }
