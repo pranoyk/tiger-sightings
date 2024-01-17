@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 	"github.com/pranoyk/tiger-sightings/model"
 	"github.com/pranoyk/tiger-sightings/service"
@@ -19,11 +17,11 @@ func (uc *SignUpUserController) RegisterUser(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := uc.Service.SignUp(ctx.Request.Context() ,uc.User)
+	err := uc.Service.SignUp(ctx.Request.Context(), uc.User)
 	if err != nil {
 		ctx.JSON(err.StatusCode, gin.H{"error": err.Message})
 		return
 	}
 
-	ctx.JSON(200, gin.H{"user_id": fmt.Sprintf("%v", userId)})
+	ctx.JSON(200, gin.H{"result": "user successfully created!"})
 }

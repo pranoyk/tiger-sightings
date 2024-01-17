@@ -11,27 +11,30 @@ import (
 	"github.com/auth0/go-auth0/authentication/database"
 	customerr "github.com/pranoyk/tiger-sightings/custom-err"
 	"github.com/pranoyk/tiger-sightings/model"
+	"github.com/pranoyk/tiger-sightings/repository"
 )
 
 type signUpUser struct {
 	domain       string
 	clientID     string
 	clientSecret string
+	repo         repository.UsersRepository
 }
 
 type SignUpUser interface {
-	SignUp(ctx context.Context, user *model.SignUpUserRequest) (string, *customerr.APIError)
+	SignUp(ctx context.Context, user *model.SignUpUserRequest) *customerr.APIError
 }
 
-func NewSignUpUser() *signUpUser {
+func NewSignUpUser(repo repository.UsersRepository) SignUpUser {
 	return &signUpUser{
 		domain:       os.Getenv("AUTH0_DOMAIN"),
 		clientID:     os.Getenv("AUTH0_CLIENT_ID"),
 		clientSecret: os.Getenv("AUTH0_CLIENT_SECRET"),
+		repo:         repo,
 	}
 }
 
-func (su *signUpUser) SignUp(ctx context.Context, user *model.SignUpUserRequest) (string, *customerr.APIError) {
+func (su *signUpUser) SignUp(ctx context.Context, user *model.SignUpUserRequest) *customerr.APIError {
 	authAPI, err := authentication.New(
 		ctx,
 		su.domain,
@@ -40,7 +43,7 @@ func (su *signUpUser) SignUp(ctx context.Context, user *model.SignUpUserRequest)
 	)
 	if err != nil {
 		fmt.Printf("failed to initialize the auth0 authentication API client: %+v", err)
-		return "", &customerr.APIError{
+		return &customerr.APIError{
 			StatusCode: 500,
 			Err:        "internal_server_error",
 			Message:    "Internal server error occurred",
@@ -57,8 +60,15 @@ func (su *signUpUser) SignUp(ctx context.Context, user *model.SignUpUserRequest)
 	createdUser, err := authAPI.Database.Signup(ctx, userData)
 	if err != nil {
 		fmt.Printf("failed to sign user up: %+v", err)
-		return "", customerr.GetSignUpError(err)
+		return customerr.GetSignUpError(err)
 	}
 
-	return createdUser.ID, nil
+	go func() {
+		err = su.repo.CreateUser(model.User{
+			Email:    createdUser.Email,
+			Username: createdUser.Username,
+		})
+	}()
+
+	return nil
 }

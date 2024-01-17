@@ -1,26 +1,29 @@
 package router
 
 import (
+	"database/sql"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pranoyk/tiger-sightings/controller"
 	"github.com/pranoyk/tiger-sightings/middleware"
 	"github.com/pranoyk/tiger-sightings/model"
+	"github.com/pranoyk/tiger-sightings/repository"
 	"github.com/pranoyk/tiger-sightings/service"
 )
 
-func Init() *gin.Engine {
+func Init(db *sql.DB) *gin.Engine {
 	router := gin.Default()
 
+	usersRepository := repository.NewUsersRepository(db)
 	signUpController := controller.SignUpUserController{
-		User: &model.SignUpUserRequest{},
-		Service: service.NewSignUpUser(),
+		User:    &model.SignUpUserRequest{},
+		Service: service.NewSignUpUser(usersRepository),
 	}
 	loginController := controller.LoginUserController{
-		User: &model.LoginRequest{},
+		User:    &model.LoginRequest{},
 		Service: service.NewLogin(),
 	}
-	tigerController := controller.TigersController{
-	}
+	tigerController := controller.TigersController{}
 
 	router.POST("/register", signUpController.RegisterUser)
 	router.POST("/login", loginController.Login)

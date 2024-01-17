@@ -1,3 +1,4 @@
 *.pub
 id_rsa
 .env
+keys/

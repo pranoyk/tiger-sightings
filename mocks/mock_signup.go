@@ -42,12 +42,11 @@ func (m *MockSignUpUser) EXPECT() *MockSignUpUserMockRecorder {
 }
 
 // SignUp mocks base method.
-func (m *MockSignUpUser) SignUp(ctx context.Context, user *model.SignUpUserRequest) (string, *customerr.APIError) {
+func (m *MockSignUpUser) SignUp(ctx context.Context, user *model.SignUpUserRequest) *customerr.APIError {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SignUp", ctx, user)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(*customerr.APIError)
-	return ret0, ret1
+	ret0, _ := ret[0].(*customerr.APIError)
+	return ret0
 }
 
 // SignUp indicates an expected call of SignUp.

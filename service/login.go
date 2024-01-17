@@ -24,7 +24,7 @@ type Login interface {
 	LogIn(ctx context.Context, user *model.LoginRequest) (string, *customerr.APIError)
 }
 
-func NewLogin() *login {
+func NewLogin() Login {
 	return &login{
 		domain:       os.Getenv("AUTH0_DOMAIN"),
 		clientID:     os.Getenv("AUTH0_CLIENT_ID"),
@@ -62,6 +62,8 @@ func (l *login) LogIn(ctx context.Context, user *model.LoginRequest) (string, *c
 		fmt.Printf("failed to login user: %+v \n", err)
 		return "", customerr.GetLoginError(err)
 	}
+
+	fmt.Printf("tokenset: %+v \n", tokenSet)
 
 	return tokenSet.AccessToken, nil
 }

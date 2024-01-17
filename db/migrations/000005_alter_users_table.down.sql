@@ -1,0 +1,6 @@
+ALTER TABLE users RENAME COLUMN username TO name;
+ALTER TABLE users ALTER COLUMN user_id DROP DEFAULT;
+ALTER TABLE tigers ALTER COLUMN tiger_id DROP DEFAULT;
+ALTER TABLE tiger_sightings ALTER COLUMN tiger_sighting_id DROP DEFAULT;
+
+DROP EXTENSION IF EXISTS "uuid-ossp";

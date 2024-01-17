@@ -27,7 +27,7 @@ func TestRegisterUser(t *testing.T) {
 
 	mockSignUpService.EXPECT().
 		SignUp(gomock.Any(), gomock.Any()).
-		Return("new_user_id", nil).
+		Return(nil).
 		Times(1)
 
 	router := gin.Default()
@@ -41,7 +41,7 @@ func TestRegisterUser(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Contains(t, w.Body.String(), "new_user_id")
+	assert.Contains(t, w.Body.String(), "user successfully created!")
 }
 
 func TestRegisterUserMissingFieldsError(t *testing.T) {
@@ -81,7 +81,7 @@ func TestRegisterUserServiceError(t *testing.T) {
 
 	mockSignUpService.EXPECT().
 		SignUp(gomock.Any(), gomock.Any()).
-		Return("", &customerr.APIError{
+		Return(&customerr.APIError{
 			StatusCode: 400,
 			Err:        "invalid_signup",
 			Message:    "User already exists",
