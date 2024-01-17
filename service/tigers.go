@@ -22,6 +22,7 @@ type Tiger interface {
 	CreateTiger(context.Context, *model.CreateTigerRequest, string) *customerr.APIError
 	CreateSighting(context.Context, *model.CreateTigerSightingRequest, string) *customerr.APIError
 	GetTigers(context.Context) ([]*model.Tiger, *customerr.APIError)
+	GetTigerSightings(context.Context, string) ([]*model.TigerSightings, *customerr.APIError)
 }
 
 func NewTiger(repo repository.TigersRepository) Tiger {
@@ -122,6 +123,15 @@ func (t *tiger) GetTigers(ctx context.Context) ([]*model.Tiger, *customerr.APIEr
 		return nil, customerr.GetTigersRepoError()
 	}
 	return tigers, nil
+}
+
+func (t *tiger) GetTigerSightings(ctx context.Context, tigerID string) ([]*model.TigerSightings, *customerr.APIError) {
+	tigerSightings, err := t.repo.GetTigerSightings(ctx, tigerID)
+	if err != nil {
+		fmt.Printf("error getting tiger sightings: %+v\n", err)
+		return nil, customerr.GetTigersRepoError()
+	}
+	return tigerSightings, nil
 }
 
 func (t *tiger) isDistantFromLastSighting(ctx context.Context, allowedDistance float64, lastSighting, currentSighting *model.TigerSightings) bool {

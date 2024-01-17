@@ -69,3 +69,13 @@ func (tc *TigersController) GetTigers(ctx *gin.Context) {
 	}
 	ctx.JSON(200, tigers)
 }
+
+func (tc *TigersController) GetTigerSightings(ctx *gin.Context) {
+	id := ctx.Param("id")
+	tigerSightings, err := tc.Service.GetTigerSightings(ctx.Request.Context(), id)
+	if err != nil {
+		ctx.JSON(err.StatusCode, gin.H{"error": err.Message})
+		return
+	}
+	ctx.JSON(200, tigerSightings)
+}
