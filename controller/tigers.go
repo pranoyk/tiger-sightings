@@ -9,6 +9,6 @@ import (
 type TigersController struct{}
 
 func (tc *TigersController) CreateTiger(ctx *gin.Context) {
-	fmt.Println("Create Tiger")
+	fmt.Println(ctx.Get("email"))
 	ctx.JSON(200, gin.H{"message": "Create Tiger"})
 }
