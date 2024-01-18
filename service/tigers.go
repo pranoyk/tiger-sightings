@@ -132,6 +132,7 @@ func (t *tiger) GetTigers(ctx context.Context, pagination *model.CursorPaginatio
 	var tigersResponse []*model.GetTigersResponse
 	for _, tiger := range tigers {
 		tigersResponse = append(tigersResponse, &model.GetTigersResponse{
+			ID:       tiger.ID,
 			Name:     tiger.Name,
 			Dob:      tiger.Dob,
 			LastSeen: tiger.LastSeen,

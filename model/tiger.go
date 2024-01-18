@@ -37,6 +37,7 @@ type Tiger struct {
 }
 
 type GetTigersResponse struct {
+	ID       string    `json:"id"`
 	Name     string    `json:"name"`
 	Dob      time.Time `json:"dob"`
 	LastSeen time.Time `json:"last_seen"`
