@@ -37,7 +37,7 @@ type Tiger struct {
 }
 
 type GetTigersResponse struct {
-	Name	 string    `json:"name"`
+	Name     string    `json:"name"`
 	Dob      time.Time `json:"dob"`
 	LastSeen time.Time `json:"last_seen"`
 	Lat      float64   `json:"lat"`
@@ -52,4 +52,11 @@ type TigerSightings struct {
 	LastSeen   time.Time `json:"last_seen" db:"last_seen"`
 	Lat        float64   `json:"lat" db:"lat"`
 	Lng        float64   `json:"lng" db:"lng"`
+}
+
+type GetTigerSightingsResponse struct {
+	Name     string    `json:"name"`
+	LastSeen time.Time `json:"last_seen"`
+	Lat      float64   `json:"lat"`
+	Lng      float64   `json:"lng"`
 }

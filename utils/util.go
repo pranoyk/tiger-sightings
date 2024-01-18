@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func DecodeCursor(cursor string) (res time.Time, uuid string, err error) {
+func DecodeTigersCursor(cursor string) (res time.Time, uuid string, err error) {
 	if cursor == "" {
 		currTime := time.Now().Format("2006-01-02T15:04:05Z")
 		res, _ = time.Parse("2006-01-02T15:04:05Z", currTime)
@@ -34,7 +34,30 @@ func DecodeCursor(cursor string) (res time.Time, uuid string, err error) {
 	return
 }
 
-func Encode(lastSeen time.Time, uuid string) string {
+func EncodeTigers(lastSeen time.Time, uuid string) string {
 	encoded := base64.StdEncoding.EncodeToString([]byte(lastSeen.Format("2006-01-02T15:04:05Z") + "," + uuid))
+	return encoded
+}
+
+func DecodeTigerSightingsCursor(cursor string) (res time.Time, err error) {
+	if cursor == "" {
+		currTime := time.Now().Format("2006-01-02T15:04:05Z")
+		res, _ = time.Parse("2006-01-02T15:04:05Z", currTime)
+		return
+	}
+	byt, err := base64.StdEncoding.DecodeString(cursor)
+	if err != nil {
+		return
+	}
+
+	res, err = time.Parse("2006-01-02T15:04:05Z", string(byt))
+	if err != nil {
+		return
+	}
+	return
+}
+
+func EncodeTigerSightings(lastSeen time.Time) string {
+	encoded := base64.StdEncoding.EncodeToString([]byte(lastSeen.Format("2006-01-02T15:04:05Z")))
 	return encoded
 }

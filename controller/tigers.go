@@ -69,7 +69,7 @@ func (tc *TigersController) GetTigers(ctx *gin.Context) {
 		Cursor: cursor,
 	}
 	if limit == "" {
-		pagination.Limit = 10
+		pagination.Limit = 3
 	} else {
 		intLimit, _ := strconv.Atoi(limit)
 		pagination.Limit = intLimit
@@ -86,11 +86,25 @@ func (tc *TigersController) GetTigers(ctx *gin.Context) {
 }
 
 func (tc *TigersController) GetTigerSightings(ctx *gin.Context) {
+	limit := ctx.Query("limit")
+	cursor := ctx.Query("cursor")
+	pagination := &model.CursorPagination{
+		Cursor: cursor,
+	}
+	if limit == "" {
+		pagination.Limit = 3
+	} else {
+		intLimit, _ := strconv.Atoi(limit)
+		pagination.Limit = intLimit
+	}
+
 	id := ctx.Param("id")
-	tigerSightings, err := tc.Service.GetTigerSightings(ctx.Request.Context(), id)
+	tigerSightings, nextCursor, err := tc.Service.GetTigerSightings(ctx.Request.Context(), id, pagination)
 	if err != nil {
 		ctx.JSON(err.StatusCode, gin.H{"error": err.Message})
 		return
 	}
+
+	ctx.Header("X-next-cursor", nextCursor)
 	ctx.JSON(200, tigerSightings)
 }

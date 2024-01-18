@@ -23,7 +23,7 @@ type Tiger interface {
 	CreateTiger(context.Context, *model.CreateTigerRequest, string) *customerr.APIError
 	CreateSighting(context.Context, *model.CreateTigerSightingRequest, string) *customerr.APIError
 	GetTigers(context.Context, *model.CursorPagination) ([]*model.GetTigersResponse, string, *customerr.APIError)
-	GetTigerSightings(context.Context, string) ([]*model.TigerSightings, *customerr.APIError)
+	GetTigerSightings(context.Context, string, *model.CursorPagination) ([]*model.GetTigerSightingsResponse, string, *customerr.APIError)
 }
 
 func NewTiger(repo repository.TigersRepository) Tiger {
@@ -120,7 +120,7 @@ func (t *tiger) CreateSighting(ctx context.Context, createSightingReq *model.Cre
 }
 
 func (t *tiger) GetTigers(ctx context.Context, pagination *model.CursorPagination) ([]*model.GetTigersResponse, string, *customerr.APIError) {
-	last_seen, tiger_id, err := utils.DecodeCursor(pagination.Cursor)
+	last_seen, tiger_id, err := utils.DecodeTigersCursor(pagination.Cursor)
 	if err != nil {
 		fmt.Printf("error decoding cursor: %+v\n", err)
 		return nil, "", customerr.GetInvalidCursorError()
@@ -144,17 +144,35 @@ func (t *tiger) GetTigers(ctx context.Context, pagination *model.CursorPaginatio
 		return nil, "", customerr.GetTigersRepoError()
 	}
 
-	nextCursor := utils.Encode(tigers[len(tigers)-1].LastSeen, tigers[len(tigers)-1].ID)
+	nextCursor := utils.EncodeTigers(tigers[len(tigers)-1].LastSeen, tigers[len(tigers)-1].ID)
 	return tigersResponse, nextCursor, nil
 }
 
-func (t *tiger) GetTigerSightings(ctx context.Context, tigerID string) ([]*model.TigerSightings, *customerr.APIError) {
-	tigerSightings, err := t.repo.GetTigerSightings(ctx, tigerID)
+func (t *tiger) GetTigerSightings(ctx context.Context, tigerID string, pagination *model.CursorPagination) ([]*model.GetTigerSightingsResponse, string, *customerr.APIError) {
+	last_seen, err := utils.DecodeTigerSightingsCursor(pagination.Cursor)
+	if err != nil {
+		fmt.Printf("error decoding cursor: %+v\n", err)
+		return nil, "", customerr.GetInvalidCursorError()
+	}
+	pagination.LastSeenCursor = last_seen
+
+	tigerSightings, name, err := t.repo.GetTigerSightings(ctx, tigerID, pagination)
 	if err != nil {
 		fmt.Printf("error getting tiger sightings: %+v\n", err)
-		return nil, customerr.GetTigersRepoError()
+		return nil, "", customerr.GetTigersRepoError()
 	}
-	return tigerSightings, nil
+	var tigersResponse []*model.GetTigerSightingsResponse
+	for _, tigerSighting := range tigerSightings {
+		tigersResponse = append(tigersResponse, &model.GetTigerSightingsResponse{
+			Name:     name,
+			LastSeen: tigerSighting.LastSeen,
+			Lat:      tigerSighting.Lat,
+			Lng:      tigerSighting.Lng,
+		})
+	}
+
+	nextCursor := utils.EncodeTigerSightings(tigerSightings[len(tigerSightings)-1].LastSeen)
+	return tigersResponse, nextCursor, nil
 }
 
 func (t *tiger) isDistantFromLastSighting(ctx context.Context, allowedDistance float64, lastSighting, currentSighting *model.TigerSightings) bool {

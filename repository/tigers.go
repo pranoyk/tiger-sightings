@@ -18,7 +18,7 @@ type TigersRepository interface {
 	CreateSighting(ctx context.Context, tx *sql.Tx, tigerSighting *model.TigerSightings, email string) (err error)
 	GetLastSighting(ctx context.Context, tigerID string) (*model.TigerSightings, error)
 	GetTigers(ctx context.Context, pagination *model.CursorPagination) ([]*model.Tiger, error)
-	GetTigerSightings(ctx context.Context, tigerID string) ([]*model.TigerSightings, error)
+	GetTigerSightings(ctx context.Context, tigerID string, pagination *model.CursorPagination) ([]*model.TigerSightings, string, error)
 }
 
 func NewTigersRepository(db *sql.DB) TigersRepository {
@@ -27,23 +27,43 @@ func NewTigersRepository(db *sql.DB) TigersRepository {
 	}
 }
 
-func (r *tigersRepository) GetTigerSightings(ctx context.Context, tigerID string) ([]*model.TigerSightings, error) {
+func (r *tigersRepository) getNameFromID(ctx context.Context, tigerID string) (string, error) {
+	var name string
+	err := r.db.QueryRowContext(ctx, "SELECT name FROM tigers WHERE tiger_id = $1", tigerID).Scan(&name)
+	if err != nil {
+		fmt.Println("error getting name from id: ", err)
+		return "", err
+	}
+	return name, nil
+}
+
+func (r *tigersRepository) GetTigerSightings(ctx context.Context, tigerID string, pagination *model.CursorPagination) ([]*model.TigerSightings, string, error) {
 	var tigerSightings []*model.TigerSightings
-	rows, err := r.db.QueryContext(ctx, "SELECT last_seen, lat, lng FROM tiger_sightings WHERE tiger_id = $1 ORDER BY last_seen DESC", tigerID)
+	rows, err := r.db.QueryContext(ctx, `SELECT last_seen, lat, lng 
+	FROM tiger_sightings 
+	WHERE tiger_id = $1 
+	AND last_seen < $2
+	ORDER BY last_seen DESC
+	LIMIT $3`, tigerID, pagination.LastSeenCursor, pagination.Limit)
 	if err != nil {
 		fmt.Println("error getting tiger sightings: ", err)
-		return nil, err
+		return nil, "", err
+	}
+	name, err := r.getNameFromID(ctx, tigerID)
+	if err != nil {
+		fmt.Printf("error getting name from id: %+v\n", err)
+		return nil, "", err
 	}
 	for rows.Next() {
 		var tigerSighting model.TigerSightings
 		err = rows.Scan(&tigerSighting.LastSeen, &tigerSighting.Lat, &tigerSighting.Lng)
 		if err != nil {
 			fmt.Println("error scanning tiger sightings: ", err)
-			return nil, err
+			return nil, "", err
 		}
 		tigerSightings = append(tigerSightings, &tigerSighting)
 	}
-	return tigerSightings, nil
+	return tigerSightings, name, nil
 }
 
 func (r *tigersRepository) GetTigers(ctx context.Context, pagination *model.CursorPagination) ([]*model.Tiger, error) {
@@ -55,7 +75,7 @@ func (r *tigersRepository) GetTigers(ctx context.Context, pagination *model.Curs
 	WHERE (ts.last_seen, t.tiger_id) < ($1, $2)
 	GROUP BY t.tiger_id, t.name, t.dob
 	ORDER BY last_seen DESC
-	LIMIT $3`,pagination.LastSeenCursor, pagination.TigerIDCursor, pagination.Limit)
+	LIMIT $3`, pagination.LastSeenCursor, pagination.TigerIDCursor, pagination.Limit)
 	if err != nil {
 		fmt.Println("error getting tigers: ", err)
 		return nil, err
