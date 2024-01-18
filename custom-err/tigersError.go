@@ -15,3 +15,11 @@ func GetTigersRepoError() *APIError {
 		Message:    "Internal server error occurred",
 	}
 }
+
+func GetInvalidCursorError() *APIError {
+	return &APIError{
+		StatusCode: 400,
+		Err:        "invalid_cursor",
+		Message:    "Invalid cursor",
+	}
+}

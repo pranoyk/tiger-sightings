@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pranoyk/tiger-sightings/model"
@@ -62,11 +63,25 @@ func (tc *TigersController) CreateSighting(ctx *gin.Context) {
 }
 
 func (tc *TigersController) GetTigers(ctx *gin.Context) {
-	tigers, err := tc.Service.GetTigers(ctx.Request.Context())
+	limit := ctx.Query("limit")
+	cursor := ctx.Query("cursor")
+	pagination := &model.CursorPagination{
+		Cursor: cursor,
+	}
+	if limit == "" {
+		pagination.Limit = 10
+	} else {
+		intLimit, _ := strconv.Atoi(limit)
+		pagination.Limit = intLimit
+	}
+
+	tigers, nextCursor, err := tc.Service.GetTigers(ctx.Request.Context(), pagination)
 	if err != nil {
 		ctx.JSON(err.StatusCode, gin.H{"error": err.Message})
 		return
 	}
+
+	ctx.Header("X-next-cursor", nextCursor)
 	ctx.JSON(200, tigers)
 }
 

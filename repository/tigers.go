@@ -17,7 +17,7 @@ type TigersRepository interface {
 	CreateTiger(ctx context.Context, tiger *model.Tiger, tigerSightins *model.TigerSightings, email string) error
 	CreateSighting(ctx context.Context, tx *sql.Tx, tigerSighting *model.TigerSightings, email string) (err error)
 	GetLastSighting(ctx context.Context, tigerID string) (*model.TigerSightings, error)
-	GetTigers(ctx context.Context) ([]*model.Tiger, error)
+	GetTigers(ctx context.Context, pagination *model.CursorPagination) ([]*model.Tiger, error)
 	GetTigerSightings(ctx context.Context, tigerID string) ([]*model.TigerSightings, error)
 }
 
@@ -46,16 +46,23 @@ func (r *tigersRepository) GetTigerSightings(ctx context.Context, tigerID string
 	return tigerSightings, nil
 }
 
-func (r *tigersRepository) GetTigers(ctx context.Context) ([]*model.Tiger, error) {
+func (r *tigersRepository) GetTigers(ctx context.Context, pagination *model.CursorPagination) ([]*model.Tiger, error) {
+	fmt.Printf("pagination: %+v\n", pagination)
 	var tigers []*model.Tiger
-	rows, err := r.db.QueryContext(ctx, "SELECT t.name, t.dob, ts.last_seen, ts.lat, ts.lng FROM tigers t JOIN tiger_sightings ts ON t.tiger_id = ts.tiger_id ORDER BY ts.last_seen DESC LIMIT 1")
+	rows, err := r.db.QueryContext(ctx, `SELECT t.tiger_id, t.name, t.dob, MAX(ts.last_seen) as last_seen, MAX(ts.lat) as lat, MAX(ts.lng) as lng
+	FROM tigers t
+	JOIN tiger_sightings ts ON t.tiger_id = ts.tiger_id
+	WHERE (ts.last_seen, t.tiger_id) < ($1, $2)
+	GROUP BY t.tiger_id, t.name, t.dob
+	ORDER BY last_seen DESC
+	LIMIT $3`,pagination.LastSeenCursor, pagination.TigerIDCursor, pagination.Limit)
 	if err != nil {
 		fmt.Println("error getting tigers: ", err)
 		return nil, err
 	}
 	for rows.Next() {
 		var tiger model.Tiger
-		err = rows.Scan(&tiger.Name, &tiger.Dob, &tiger.LastSeen, &tiger.Lat, &tiger.Lng)
+		err = rows.Scan(&tiger.ID, &tiger.Name, &tiger.Dob, &tiger.LastSeen, &tiger.Lat, &tiger.Lng)
 		if err != nil {
 			fmt.Println("error scanning tigers: ", err)
 			return nil, err
@@ -101,6 +108,7 @@ func (r *tigersRepository) CreateTiger(ctx context.Context, tiger *model.Tiger, 
 }
 
 func (r *tigersRepository) CreateSighting(ctx context.Context, tx *sql.Tx, tigerSighting *model.TigerSightings, email string) (err error) {
+	fmt.Printf("tiger sighting: %+v\n", tigerSighting)
 	if tx != nil {
 		_, err = tx.ExecContext(ctx, "INSERT INTO tiger_sightings (tiger_id, created_by, last_seen, lat, lng) VALUES ($1, (SELECT user_id FROM users WHERE email = $2), $3, $4, $5)",
 			tigerSighting.TigerID,

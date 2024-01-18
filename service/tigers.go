@@ -12,6 +12,7 @@ import (
 	customerr "github.com/pranoyk/tiger-sightings/custom-err"
 	"github.com/pranoyk/tiger-sightings/model"
 	"github.com/pranoyk/tiger-sightings/repository"
+	"github.com/pranoyk/tiger-sightings/utils"
 )
 
 type tiger struct {
@@ -21,7 +22,7 @@ type tiger struct {
 type Tiger interface {
 	CreateTiger(context.Context, *model.CreateTigerRequest, string) *customerr.APIError
 	CreateSighting(context.Context, *model.CreateTigerSightingRequest, string) *customerr.APIError
-	GetTigers(context.Context) ([]*model.Tiger, *customerr.APIError)
+	GetTigers(context.Context, *model.CursorPagination) ([]*model.GetTigersResponse, string, *customerr.APIError)
 	GetTigerSightings(context.Context, string) ([]*model.TigerSightings, *customerr.APIError)
 }
 
@@ -34,6 +35,7 @@ func NewTiger(repo repository.TigersRepository) Tiger {
 func (t *tiger) CreateTiger(ctx context.Context, createTigerReq *model.CreateTigerRequest, email string) *customerr.APIError {
 	parsedDob, err := time.Parse("2006-01-02", createTigerReq.Dob)
 	if err != nil {
+		fmt.Printf("error parsing dob: %+v\n", err)
 		return customerr.GetInvalidTimeError()
 	}
 	tiger := &model.Tiger{
@@ -42,6 +44,7 @@ func (t *tiger) CreateTiger(ctx context.Context, createTigerReq *model.CreateTig
 	}
 	parsedTime, err := time.Parse("2006-01-02T15:04:05Z", createTigerReq.LastSeen)
 	if err != nil {
+		fmt.Printf("error parsing last seen: %+v\n", err)
 		return customerr.GetInvalidTimeError()
 	}
 	lat, err := strconv.ParseFloat(createTigerReq.Lat, 64)
@@ -116,13 +119,33 @@ func (t *tiger) CreateSighting(ctx context.Context, createSightingReq *model.Cre
 	}
 }
 
-func (t *tiger) GetTigers(ctx context.Context) ([]*model.Tiger, *customerr.APIError) {
-	tigers, err := t.repo.GetTigers(ctx)
+func (t *tiger) GetTigers(ctx context.Context, pagination *model.CursorPagination) ([]*model.GetTigersResponse, string, *customerr.APIError) {
+	last_seen, tiger_id, err := utils.DecodeCursor(pagination.Cursor)
+	if err != nil {
+		fmt.Printf("error decoding cursor: %+v\n", err)
+		return nil, "", customerr.GetInvalidCursorError()
+	}
+	pagination.LastSeenCursor = last_seen
+	pagination.TigerIDCursor = tiger_id
+
+	tigers, err := t.repo.GetTigers(ctx, pagination)
+	var tigersResponse []*model.GetTigersResponse
+	for _, tiger := range tigers {
+		tigersResponse = append(tigersResponse, &model.GetTigersResponse{
+			Name:     tiger.Name,
+			Dob:      tiger.Dob,
+			LastSeen: tiger.LastSeen,
+			Lat:      tiger.Lat,
+			Lng:      tiger.Lng,
+		})
+	}
 	if err != nil {
 		fmt.Printf("error getting tigers: %+v\n", err)
-		return nil, customerr.GetTigersRepoError()
+		return nil, "", customerr.GetTigersRepoError()
 	}
-	return tigers, nil
+
+	nextCursor := utils.Encode(tigers[len(tigers)-1].LastSeen, tigers[len(tigers)-1].ID)
+	return tigersResponse, nextCursor, nil
 }
 
 func (t *tiger) GetTigerSightings(ctx context.Context, tigerID string) ([]*model.TigerSightings, *customerr.APIError) {
