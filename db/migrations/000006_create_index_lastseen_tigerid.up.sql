@@ -1,0 +1,1 @@
+CREATE INDEX idx_lastseen_tigerid ON tiger_sightings (last_seen, tiger_id);
