@@ -1,6 +1,6 @@
 generate:
 	@echo "Generating..."
-	@go generate ./...
+	go generate ./...
 	@echo "Done"
 
 migrate-up:
@@ -11,3 +11,9 @@ migrate-down:
 
 migrate-force:
 	migrate -path ./db/migrations -database ${POSTGRESQL_URL} force ${VERSION}
+
+docker-compose-up:
+	docker-compose up -d
+
+docker-compose-down:
+	docker-compose down
